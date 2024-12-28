@@ -32,17 +32,46 @@
 # SET DSTATUS=
 
 $ErrorActionPreference = 'silentlycontinue'
-$TimeSpan = (Get-Date) - (New-TimeSpan -Day 1)
 
-if (Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '202'; StartTime = $TimeSpan }) {
-    Write-Output "Duplicati Backup Ended with Errors"
-    Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '205', '201', '202'; StartTime = $TimeSpan }
-    exit 1
+# Name of the service to check
+$serviceName = 'Duplicati'  # Update this to your specific service name if different
+
+# Check if the service exists
+$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+if (-not $service) {
+    Write-Output "The service $serviceName does not exist on this system."
+    $host.SetShouldExit(0)  # Using exit code 0 for "service not found"
+    return
 }
 
+# Define the time spans for the last 24 hours and the last 5 days
+$Last24Hours = (Get-Date) - (New-TimeSpan -Days 1)
+$Last10Days = (Get-Date) - (New-TimeSpan -Days 10)
 
-else {
-    Write-Output "Duplicati Backup Is Working Correctly"
-    Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '205', '200', '201' }
-    exit 0
+# Fetch error events from the last 24 hours
+$errorEvents = Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = 202; StartTime = $Last24Hours} -ErrorAction SilentlyContinue | Sort-Object TimeCreated
+
+# Check for any errors in the last 24 hours first
+if ($errorEvents) {
+    Write-Output "Error(s) found in Duplicati Backup within the last 24 hours."
+    foreach ($event in $errorEvents) {
+        Write-Output "Error at $($event.TimeCreated): $($event.Message)"
+        Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '202', '200', '201' }
+    }
+    $host.SetShouldExit(1)  # Exit code 1 for error
+    return
+}
+
+# If no errors, check for successful backup events in the last 5 days
+$successEvents = Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '200', '201'; StartTime = $Last10Days} -ErrorAction SilentlyContinue | Sort-Object TimeCreated
+
+if ($successEvents) {
+    $lastSuccessfulEvent = $successEvents | Select-Object -Last 1
+    Write-Output "Last successful Duplicati Backup was at $($lastSuccessfulEvent.TimeCreated)"
+    Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '202', '200', '201' }
+    $host.SetShouldExit(0)  # Exit code 0 for success
+} else {
+    Write-Output "No successful Duplicati Backup found in the last 10 days."
+    Get-WinEvent -FilterHashtable @{LogName = 'Application'; ID = '202', '200', '201' }
+    $host.SetShouldExit(1)  # Exit code 1 for error
 }
