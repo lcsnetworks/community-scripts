@@ -902,9 +902,9 @@
     "guid": "6c78eb04-57ae-43b0-98ed-cbd3ef9e2f80",
     "filename": "Win_Chocolatey_Manage_Apps_Bulk.ps1",
     "submittedBy": "https://github.com/silversword411",
-    "name": "Chocolatey - Install, Uninstall and Upgrade Software",
-    "description": "This script installs, uninstalls and updates software using Chocolatey with logic to slow tasks to minimize hitting community limits. Mode install/uninstall/upgrade Hosts x",
-    "syntax": "-$PackageName <string>\n[-Hosts <string>]\n[-mode {(install) | upgrade | uninstall}]",
+    "name": "Chocolatey - Install, Uninstall, List and Upgrade Software",
+    "description": "This script installs, uninstalls and updates software using Chocolatey with logic to slow tasks to minimize hitting community limits. Mode install/uninstall/upgrade/upgrade-only-installed Hosts x",
+    "syntax": "-PackageName <string>\n[-Hosts <string>]\n[-mode {(install) | upgrade | upgrade-only-installed | uninstall | list}]",
     "shell": "powershell",
     "category": "TRMM (Win):3rd Party Software>Chocolatey",
     "supported_platforms": [
@@ -918,7 +918,7 @@
     "submittedBy": "https://github.com/dinger1986",
     "name": "Winget - Install, Uninstall and Upgrade Software",
     "description": "This script installs, uninstalls and updates software using winget. Mode install/uninstall/upgrade/search",
-    "syntax": "-$PackageName <string>]\n[-mode {install | search | upgrade | uninstall }]",
+    "syntax": "-PackageName <string>]\n[-mode {install | search | upgrade | uninstall }]",
     "shell": "powershell",
     "category": "TRMM (Win):3rd Party Software>WinGet",
     "supported_platforms": [
@@ -1029,6 +1029,20 @@
     "default_timeout": 30
   },
   {
+    "guid": "5bc815a0-d349-416f-8c3d-ac499d4da2e8",
+    "filename": "Win_Reboot.ps1",
+    "submittedBy": "https://github.com/silversword411",
+    "name": "Reboot/Restart Computer",
+    "description": "Reboots/Restarts the computer with an optional wait time before restarting.",
+    "syntax": "[-wait <Int>]",
+    "shell": "powershell",
+    "category": "TRMM (Win):Other",
+    "supported_platforms": [
+      "windows"
+    ],
+    "default_timeout": 86400
+  },
+  {
     "guid": "f396dae2-c768-45c5-bd6c-176e56ed3614",
     "filename": "Win_Power_RestartorShutdown.ps1",
     "submittedBy": "https://github.com/tremor021",
@@ -1064,11 +1078,11 @@
       "-serviceName {{client.ScreenConnectService}}",
       "-url {{client.ScreenConnectInstaller}}",
       "-clientname {{client.name}}",
-      "-sitename {{site.name}}",
-      "-action {(install) | uninstall | start | stop}"
+      "-sitename {{site.name}}"
     ],
-    "default_timeout": "90",
+    "default_timeout": "120",
     "shell": "powershell",
+    "syntax": "-serviceName <string>\n-url <string>\n-clientname <string>\n-sitename <string>\n-action {(install) | uninstall | start | stop}",
     "supported_platforms": [
       "windows"
     ],
